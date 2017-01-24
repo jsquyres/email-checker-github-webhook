@@ -1,3 +1,7 @@
+
+
+
+
 # "Bad email checker" Github webhook
 
 This is a simple, pure-PHP Github webhook that checks whether all
@@ -106,3 +110,8 @@ Use /github/git-commit-email-checker.php as a WebHook URL in your Github reposit
     see the output from the PHP script.
   * If all goes well, the last line of output should be `This commit
     is signed off. Yay!` or `All commits signed off. Yay!`
+ 
+ 
+ 
+ 
+ 
