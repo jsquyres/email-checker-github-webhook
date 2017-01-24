@@ -1,8 +1,4 @@
-
-
-
-
-# "Bad email checker" Github webhook
+ "Bad email checker" Github webhook
 
 This is a simple, pure-PHP Github webhook that checks whether all
 commits contain non-boneheaded email addresses.
