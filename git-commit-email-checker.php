@@ -240,11 +240,12 @@ function process_commits($commits_url, $json, $config, $opts, $commits)
 
         # Look for a bonheaded commit email address
         $boneheaded = 0;
+        $boneheaded_addr = "";
         foreach (array("author", "committer") as $id) {
             foreach ($bad_addrs as $ba_value) {
-                print("Checking: $ba_value / $id\n");
                 if (!$boneheaded) {
                     $boneheaded = preg_match("$ba_value", ${$id});
+                    $boneheaded_addr = ${$id};
                 }
             }
         }
@@ -254,9 +255,9 @@ function process_commits($commits_url, $json, $config, $opts, $commits)
             $debug_message .= "$author / $committer -- looks good!\n";
         } else {
             $status["state"]       = "failure";
-            $status["description"] = "Boneheaded $id email address.";
+            $status["description"] = "Boneheaded $id email address: $boneheaded_addr.";
             $status["target_url"]  = $target_url;
-            $debug_message .= $status["description"];
+            $debug_message .= $status["description"] . "\n";
 
             $happy = false;
         }
@@ -283,6 +284,9 @@ function process_commits($commits_url, $json, $config, $opts, $commits)
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($status));
         $output = curl_exec($ch);
         curl_close($ch);
+        #        $debug_message .= "Curl output: $output\n";
+        print("Length of curl output: " . length($output) . "\n");
+#        $i = 10000;
 
         ++$i;
     }

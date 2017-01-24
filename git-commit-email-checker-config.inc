@@ -23,7 +23,7 @@ function fill_config()
     #$config["allowed_sources"] = array("192.30.252.0/22");
 
     # Fill this in with your Github personal access token.
-    $config["auth_token"] = "e7c63b4b40ffa012c464cd501efcea0a6b222436";
+    $config["auth_token"] = "22fb98dcc243a0936c23e1a363c20d60ded99c7a";
 
     # The name of the CI agent at Github
     $config["ci-context"] = "Git-commit-email-checker";
