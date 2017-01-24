@@ -26,6 +26,20 @@ require_once "git-commit-email-checker-config.inc";
 ##############################################################################
 ##############################################################################
 
+# For 4.3.0 <= PHP <= 5.4.0
+if (!function_exists('http_response_code')) {
+    function http_response_code($newcode = NULL) {
+        static $code = 200;
+        if ($newcode !== NULL) {
+            header("X-PHP-Response-Code: $newcode", true, $newcode);
+            if (!headers_sent()) {
+                $code = $newcode;
+            }
+        }
+        return $code;
+    }
+}
+
 function my_die($msg, $code = 400)
 {
     # Die with a non-200 error code
@@ -50,8 +64,10 @@ function check_for_allowed_sources($config)
     if (isset($config["allowed_sources"]) &&
         count($config["allowed_sources"] > 0)) {
         if (isset($_SERVER["HTTP_X_REAL_IP"])) {
+            $source_str = $_SERVER["HTTP_X_REAL_IP"];
             $source = ip2long($_SERVER["HTTP_X_REAL_IP"]);
         } else if (isset($_SERVER["REMOTE_ADDR"])) {
+            $source_str = $_SERVER["REMOTE_ADDR"];
             $source = ip2long($_SERVER["REMOTE_ADDR"]);
         } else {
             # This will not match anything
@@ -69,8 +85,7 @@ function check_for_allowed_sources($config)
             }
         }
         if (!$happy) {
-            my_die("Discarding request from disallowed IP address (" .
-            $_SERVER["HTTP_X_REAL_IP"] . ")\n");
+            my_die("Discarding request from disallowed IP address ($source_str)\n");
         }
     }
 }

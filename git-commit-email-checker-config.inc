@@ -20,7 +20,7 @@ function fill_config()
     # not come from these network blocks.  As of 9 Aug 2016, according
     # to
     # https://help.github.com/articles/what-ip-addresses-does-github-use-that-i-should-whitelist/:
-    $config["allowed_sources"] = array();
+    #$config["allowed_sources"] = array("192.30.252.0/22");
 
     # Fill this in with your Github personal access token.
     $config["auth_token"] = "Fill me in";
