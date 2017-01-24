@@ -33,16 +33,21 @@ function fill_config()
     $config["ci-link-url"] = "http://ltsi.linuxfoundation.org/developers/signed-process";
 
     # You almost certainly want "debug" set to 0 (or unset)
-    $config["debug"] = 0;
+    $config["debug"] = 1;
 
-    # These are the allowed repos that we reply to
-    $config["github3"]["jsquyres/signed-off-by-github-webhook"] = 1;
+    # These are the allowed repos that we reply to.  Valid values:
+    # - a full repo name, such as: jsquyres/email-checker-github-webhook
+    # - full wildcard: *
+    # - wildcard the username/org name: */email-checker-github-webhook
+    # - wildcard the repo name: */*
+    #$config["github"]["jsquyres/email-checker-github-webhook"] = 1;
+    $config["github"]["jsquyres/*"] = 1;
 
     # GitHub API URL.  Can be configured for internal / GitHub
     # Enterprise instances.
     #
     # GitHub.com: https://api.github3.cisco.com
-    # GHE: http[s]://YOUR_GHE_NAME/api
+    # GHE: http[s]://YOUR_GHE_SERVER/api
     #
     $config["api_url_base"] = "https://github3.cisco.com/api";
 

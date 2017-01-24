@@ -162,6 +162,14 @@ function open_curl($url, $config)
     # will follow them to get the content from the final location.
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 
+    # Set CURLOPT_HTTPHEADER to include the authorization token, just
+    # in case this is a private repo.
+    $headers = array(
+        "Content-type: application/json",
+        "Authorization: token " . $config["auth_token"]
+    );
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
     return $ch;
 }
 
@@ -212,7 +220,8 @@ function process_commits($commits_url, $json, $config, $opts, $commits)
     $i = 0;
     foreach ($commits as $key => $value) {
         if (!isset($value->{"sha"}) ||
-            !isset($value->{"author"}) ||
+            !isset($value->{"commit"}->{"author"}) ||
+            !isset($value->{"commit"}->{"committer"}) ||
             !isset($value->{"commit"}->{"message"})) {
             my_die("Somehow commit infomation is missing from Github's response...");
         }
@@ -221,7 +230,7 @@ function process_commits($commits_url, $json, $config, $opts, $commits)
         $author = $value->{"commit"}->{"author"}->{"email"};
         $committer = $value->{"commit"}->{"committer"}->{"email"};
         $repo = $json->{"repository"}->{"full_name"};
-        $status_url = $config["api_url_base"] . "https://api.github.com/repos/$repo/statuses/$sha";
+        $status_url = $config["api_url_base"] . "/repos/$repo/statuses/$sha";
         $debug_message .= "examining commit index $i / sha $sha:\nstatus url: $status_url\n";
 
         $status = array(
@@ -232,24 +241,23 @@ function process_commits($commits_url, $json, $config, $opts, $commits)
         $boneheaded = 0;
         foreach (array("author", "committer") as $id) {
             foreach ($bad_addrs as $value) {
-                eval("$boneheaded = preg_match($value, \$$id");
-                if ($happy && $boneheaded) {
-                    $status["state"]       = "failure";
-                    $status["description"] = "Boneheaded $id email address.";
-                    $status["target_url"]  = $target_url;
-                    $debug_message .= $status["description"];
-
-                    $happy = false;
+                if (!$boneheaded) {
+                    eval("$boneheaded = preg_match($value, \$$id)");
                 }
             }
         }
-
-        if ($happy) {
+        if (!$boneheaded) {
             $status["state"]       = "success";
-            $status["description"] = "This commit . Yay!";
-            $debug_message .= "This commit is signed off\n\n";
+            $status["description"] = "This commit has good email addresses. Yay!";
+            $debug_message .= "$author / $committer -- looks good!\n";
+        } else {
+            $status["state"]       = "failure";
+            $status["description"] = "Boneheaded $id email address.";
+            $status["target_url"]  = $target_url;
+            $debug_message .= $status["description"];
+
+            $happy = false;
         }
-        $final_message = $status["description"];
 
         # If this is the last commit in the array (and there's more than
         # one commit in the array), override its state and description to
@@ -258,10 +266,10 @@ function process_commits($commits_url, $json, $config, $opts, $commits)
         if ($i == count($commits) - 1 && $i > 0) {
             if ($happy) {
                 $status["state"]       = "success";
-                $status["description"] = "All commits signed off. Yay!";
+                $status["description"] = "All commits have good email addresses. Yay!";
             } else {
                 $status["state"]       = "failure";
-                $status["description"] = "Some commits not signed off.";
+                $status["description"] = "Some commits have boneheaded email addresses.";
                 $status["target_url"]  = $target_url;
             }
             $final_message = $status["description"];
@@ -270,11 +278,6 @@ function process_commits($commits_url, $json, $config, $opts, $commits)
         # Send the results back to Github for this specific commit
         $ch = open_curl($status_url, $config);
         curl_setopt($ch, CURLOPT_POST, 1);
-        $headers = array(
-            "Content-type: application/json",
-            "Authorization: token " . $config["auth_token"]
-        );
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($status));
         $output = curl_exec($ch);
         curl_close($ch);
@@ -287,6 +290,31 @@ function process_commits($commits_url, $json, $config, $opts, $commits)
 
     # Happiness!  Exit.
     exit(0);
+}
+
+function repo_matches($full_name, $key)
+{
+    if ($full_name == $key) {
+        return 1;
+    }
+
+    // Full wildcard
+    else if ($key == "*" ||
+             $key == "*/*") {
+        return 1;
+    }
+
+    // Partial wildcards
+    preg_match("/^(.+?)\/(.+)$/", $full_name, $name_matches);
+    preg_match("/^(.+?)\/(.+)$/", $key, $key_matches);
+    if ($key_matches[1] == "*" && $key_matches[2] == $name_matches[2]) {
+        return 1;
+    }
+    else if ($key_matches[2] == "*" && $key_matches[1] == $name_matches[1]) {
+        return 1;
+    }
+
+    return 0;
 }
 
 function process($json, $config, $opts, $value)
@@ -323,7 +351,7 @@ $opts = fill_opts_from_json($json);
 # (e.g., "open-mpi/ompi").
 $repo = $json->{"repository"}->{"full_name"};
 foreach ($config["github"] as $key => $value) {
-    if ($repo == $key) {
+    if (repo_matches($repo, $key)) {
         process($json, $config, $opts, $value);
 
         # process() will not return, but be paranoid anyway
