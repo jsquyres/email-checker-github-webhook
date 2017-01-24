@@ -117,7 +117,8 @@ function fill_opts_from_json($json)
     if (!isset($json->{"action"}) ||
         ($json->{"action"} != "synchronize" &&
          $json->{"action"} != "opened")) {
-       print "Hello, Github ping!  I'm here!\n";
+        print "Hello, Github ping!  I'm here!\n";
+        print_r($json);
        exit(0);
     }
 
@@ -217,8 +218,8 @@ function process_commits($commits_url, $json, $config, $opts, $commits)
         }
 
         $sha = $value->{"sha"};
-        $author = $value->{"commit"}->{"author"};
-        $committer = $value->{"commit"}->{"committer"};
+        $author = $value->{"commit"}->{"author"}->{"email"};
+        $committer = $value->{"commit"}->{"committer"}->{"email"};
         $repo = $json->{"repository"}->{"full_name"};
         $status_url = $config["api_url_base"] . "https://api.github.com/repos/$repo/statuses/$sha";
         $debug_message .= "examining commit index $i / sha $sha:\nstatus url: $status_url\n";
