@@ -215,7 +215,8 @@ function process_commits($commits_url, $json, $config, $opts, $commits)
     $bad_addrs = array(
         "/^root@/",
         "/@.+\.cisco\.com/",
-        "/localhostl/");
+        "/localhost/",
+        "/localdomain/");
 
     $i = 0;
     foreach ($commits as $key => $value) {
@@ -240,9 +241,10 @@ function process_commits($commits_url, $json, $config, $opts, $commits)
         # Look for a bonheaded commit email address
         $boneheaded = 0;
         foreach (array("author", "committer") as $id) {
-            foreach ($bad_addrs as $value) {
+            foreach ($bad_addrs as $ba_value) {
+                print("Checking: $ba_value / $id\n");
                 if (!$boneheaded) {
-                    eval("$boneheaded = preg_match($value, \$$id)");
+                    $boneheaded = preg_match("$ba_value", ${$id});
                 }
             }
         }
