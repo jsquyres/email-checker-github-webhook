@@ -285,7 +285,8 @@ function process_commits($commits_url, $json, $config, $opts, $commits)
         $output = curl_exec($ch);
         curl_close($ch);
         #        $debug_message .= "Curl output: $output\n";
-        print("Length of curl output: " . length($output) . "\n");
+        print("Length of curl output: " . strlen($output) . "\n");
+        $debug_message .= "Beginning of curl output: " . substr($output, 0, 256) . "\n";
 #        $i = 10000;
 
         ++$i;

@@ -47,9 +47,9 @@ function fill_config()
     # Enterprise instances.
     #
     # GitHub.com: https://api.github3.cisco.com
-    # GHE: http[s]://YOUR_GHE_SERVER/api
+    # GHE: http[s]://YOUR_GHE_SERVER/api/v3
     #
-    $config["api_url_base"] = "https://github3.cisco.com/api";
+    $config["api_url_base"] = "https://github3.cisco.com/api/v3";
 
     # Return the $config variable
     return $config;
