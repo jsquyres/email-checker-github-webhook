@@ -90,12 +90,19 @@ function check_for_allowed_sources($config)
     }
 }
 
-function check_for_non_empty_payload()
+function get_payload()
 {
     # Ensure we got a non-empty payload
-    if (!isset($_POST["payload"])) {
-        my_die("Received POST request with empty payload\n");
+    if (isset($_POST["payload"])) {
+        return $_POST["payload"];
+    } else {
+        $payload = file_get_contents("php://input");
+        if ($payload != "") {
+            return $payload;
+        }
     }
+
+    my_die("Received POST request with empty payload\n");
 }
 
 ##############################################################################
@@ -337,8 +344,11 @@ function process($json, $config, $opts, $value)
 # Main
 
 # Verify that this is a POST
-if (!isset($_POST) || count($_POST) == 0) {
-    print("Use " . $_SERVER["REQUEST_URI"] .
+if (!isset($_SERVER["REQUEST_METHOD"]) ||
+    $_SERVER["REQUEST_METHOD"] != "POST") {
+    print("Use " . $_SERVER["SERVER_NAME"] .
+          $_SERVER["REQUEST_URI"] .
+          ":" . $_SERVER["SERVER_PORT"] .
           " as a WebHook URL in your Github repository settings.\n");
     exit(1);
 }
@@ -348,9 +358,9 @@ $config = fill_config();
 
 # Sanity checks
 check_for_allowed_sources($config);
-check_for_non_empty_payload();
+$payload = get_payload();
 
-$json = parse_json($_POST["payload"]);
+$json = parse_json($payload);
 $opts = fill_opts_from_json($json);
 
 # Loop over all the repos in the config; see if this incoming request
