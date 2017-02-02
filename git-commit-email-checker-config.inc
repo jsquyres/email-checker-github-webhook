@@ -1,6 +1,6 @@
 <?php
 #
-# Copyright (c) 2016 Jeffrey M. Squyres.  All rights reserved.
+# Copyright (c) 2017 Jeffrey M. Squyres.  All rights reserved.
 # $COPYRIGHT$
 #
 # Additional copyrights may follow
