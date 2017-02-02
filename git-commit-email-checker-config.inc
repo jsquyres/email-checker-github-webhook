@@ -17,15 +17,22 @@
 function fill_config()
 {
     # git-commit-email-checker.php will ignore any incoming POST that does
-    # not come from these network blocks.  As of 9 Aug 2016, according
-    # to
+    # not come from these network blocks.
+    #
+    # For GitHub Enterprise, fill in the CIDR notation for your GitHub
+    # server(s).
+    #$config["allowed_sources"] = array("10.10.11.0/24", "10.10.22.0/24");
+    #
+    # For GitHub.com, as of 9 Aug 2016, according to
     # https://help.github.com/articles/what-ip-addresses-does-github-use-that-i-should-whitelist/:
     $config["allowed_sources"] = array("192.30.252.0/22");
 
-    # Fill this in with your Github personal access token.
+    # Fill this in with a Github personal access token that is allowed
+    # to set pull request statuses.  See the README.md for more detail.
     $config["auth_token"] = "Fill me in";
 
-    # The name of the CI agent at Github
+    # The name that will appear for this CI agent at GitHub on pull
+    # requests.
     $config["ci-context"] = "Bozo email checker";
 
     # Optional: if a commit contains a boneheaded email address, link
@@ -35,7 +42,8 @@ function fill_config()
     # You almost certainly want "debug" set to 0 (or unset)
     $config["debug"] = 0;
 
-    # These are the allowed repos that we reply to.  Valid values:
+    # These are the repos for which we are allowed to reply.
+    # Valid values are:
     # - a full repo name, such as: jsquyres/email-checker-github-webhook
     # - full wildcard: *
     # - wildcard the username/org name: */email-checker-github-webhook
@@ -52,7 +60,9 @@ function fill_config()
     #
     $config["api_url_base"] = "https://api.github.com";
 
-    # Array of perl regular expressions to search for
+    # Array of regular expressions used to check author/committer
+    # email addresses.  These are Perl-style regular expressions
+    # (i.e., they are passed to the PHP function preg_match()).
     $config["bad"] = array(
         "/^root@/",
         "/localhost/",
